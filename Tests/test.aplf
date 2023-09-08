@@ -1,0 +1,6 @@
+test name;folder
+'No such test' ⎕SIGNAL (3≠⎕NC 'test_',name)/6
+folder←'/tmp/nuget-test'
+3 ⎕NDELETE folder
+⎕SE.NuGet.Setup folder
+⍎'test_',name,' folder'

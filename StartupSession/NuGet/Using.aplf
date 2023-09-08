@@ -1,0 +1,37 @@
+ using_paths←Using project_dir;deps;d;k;v;t;pkg_name;pkgrt;dll;pkgs;ns;jsname;tgts;z;dlls;children;p;folder;name
+ jsname←7162⌶ ⍝ JSON Translate Name
+ pkgs←Packages project_dir
+ :If 0≠≢deps←findfile project_dir,'/*.deps.json'
+ :OrIf 0≠≢deps←findfile project_dir,'/published/*.deps.json'
+
+     ⍝ ↓↓↓ This code is a namespace-based version of what follows, in case that turns out to be useful someday
+     ⍝ ns←⎕JSON ⊃⎕NGET deps
+     ⍝ z←ns.targets⍎0 jsname ns.runtimeTarget.name
+     ⍝ children←z.⎕NL-9 ⍝ refs to all children
+     ⍝ children←(({(¯1+⍵⍳¨'/')↑¨⍵}1 jsname¨children)∊⊃¨pkgs)/children
+     ⍝ dlls←1 jsname¨⊃,/(,z⍎⍕children).runtime.⎕NL -9
+     ⍝ dlls←(∊¨1↓¨⎕NPARTS¨dlls)~⊂'nuget-packages.dll'
+     ⍝ ↑↑↑
+
+     (d k v t)←↓⍉⎕JSON ⎕OPT'Format' 'M'⊃⎕NGET deps
+     ⍝ Depth, Key, Value, Type
+     {}2{p[⍵]←⍺[⍺⍸⍵]}⌿⊢∘⊂⌸d⊣p←⍳≢d   ⍝ Parent vector p
+     ⍝ Descendant of pkgs and key≡"runtime"
+     pkg_name←⊃¨'/'(≠⊆⊢)¨k   ⍝ e.g. Clock/1.0.3 → Clock
+     pkgrt←(k∊⊂'runtime')(∧⍤1){⍵∨⍵[p]}⍤1⍣≡pkg_name(∊⍤1 0)⊃¨pkgs
+     ⍝ Child of "runtime" key is path to .dll
+     ⍝    file name    key  parent is "runtime"
+              ⍝ dll←⊃∘⌽¨'/'(≠⊆⊢)¨k⌿⍤1⍨(⊂p)⌷⍤1⊢pkgrt
+     dll←∊¨1↓¨⎕NPARTS(∨⌿pkgrt[;p])/k
+     using_paths←(project_dir,'/published/')∘,¨dll
+
+     (folder name)←2↑⎕NPARTS ¯10↓deps
+     :If ⎕NEXISTS dll←(∊folder name),'.dll'
+         using_paths,←⊂dll ⍝ Include primary DLL
+     :EndIf
+
+ :Else ⍝ No deps.json file
+     ∘∘∘ ⍝ Framework? Now what?!
+     using_paths←{(~(2⊃¨⎕NPARTS ⍵)∊⊂project_name)/⍵}(⊃⎕NINFO⍠1⊢project_dir,'/published/*.dll')
+ :EndIf
+ using_paths←',',¨using_paths
