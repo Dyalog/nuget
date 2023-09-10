@@ -17,8 +17,8 @@
      ⍝ Depth, Key, Value, Type
      {}2{p[⍵]←⍺[⍺⍸⍵]}⌿⊢∘⊂⌸d⊣p←⍳≢d   ⍝ Parent vector p
      ⍝ Descendant of pkgs and key≡"runtime"
-     pkg_name←⊃¨'/'(≠⊆⊢)¨k   ⍝ e.g. Clock/1.0.3 → Clock
-     pkgrt←(k∊⊂'runtime')(∧⍤1){⍵∨⍵[p]}⍤1⍣≡pkg_name(∊⍤1 0)⊃¨pkgs
+     pkg_name←⎕C ⊃¨'/'(≠⊆⊢)¨k   ⍝ e.g. Clock/1.0.3 → Clock
+     pkgrt←(k∊⊂'runtime')(∧⍤1){⍵∨⍵[p]}⍤1⍣≡pkg_name(∊⍤1 0)⊃¨⎕C pkgs
      ⍝ Child of "runtime" key is path to .dll
      ⍝    file name    key  parent is "runtime"
               ⍝ dll←⊃∘⌽¨'/'(≠⊆⊢)¨k⌿⍤1⍨(⊂p)⌷⍤1⊢pkgrt
