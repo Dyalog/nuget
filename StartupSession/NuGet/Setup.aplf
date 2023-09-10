@@ -1,4 +1,4 @@
- r←Setup project_dir;csproj;xml;project_name;TFM;RID;pkgs
+ r←Setup project_dir;csproj;xml;project_name;TFM;RID;pkgs;z
  :If 0=⎕NC 'force' ⋄ force←0 ⋄ :EndIf
  project_name←{(1-⌊/(⌽⍵)⍳'\/')↑⍵}project_dir
 
@@ -17,7 +17,7 @@
     →0
  :EndIf
 
- ⎕←↑⎕CMD CmdPaths'dotnet new classlib --target-framework-override ',TFM,' -o ',project_dir
+ z←↑⎕CMD CmdPaths'dotnet new classlib --target-framework-override ',TFM,' -o ',project_dir
  (xml csproj)←CSProjXML project_dir
  :If ~(⊂'LangVersion')∊xml[;2] ⍝ Add latest LangVersion
      xml⍪←2 'LangVersion' 'Latest'⍬ 5

@@ -26,7 +26,7 @@
  bad←0⍨¨new
  :For i :In ⍸~same
      add←(i⊃new),(0≠≢v)/' --version ',v←i⊃newv
-     ⎕←⍪r←⎕CMD 'dotnet add ',project_dir,' package ',add
+     z←⍪r←⎕CMD 'dotnet add ',project_dir,' package ',add
      bad[i]←∨/'error:'⍷∊r
  :EndFor
 
