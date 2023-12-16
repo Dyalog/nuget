@@ -194,9 +194,12 @@ mine←name{(((≢⍺)↑¨⍕¨⍵)∊⊂⍺)/⍵}assemblies
    ⍝
    ⍝ The key-value part of args is interpreted as a map from options to values. Currently the following options are supported:
    ⍝ * project_dir is the project directory; it must be signified if args is a pure list of key-value pairs
-   ⍝ * include_primary is a boolean signifying whether (1) or not (0) the path to the primary DLL is included in the output
+   ⍝ * include_primary is a boolean signifying whether (1) or not (0) the path to the primary DLL is included in the output.
+   ⍝   Its standard value is 1.
    ⍝ * exclude_pkgs is a list of package names (without version number!) to be excluded in the output
+   ⍝   Its standard value is ⍬
    ⍝ * include_pkgs is a list of package names (without version number!) to be included in the output
+   ⍝   Its standard value is ⍬
    ⍝ The parameter exclude_pkgs takes precedence over include_pkgs and giving include_pkgs a value of ⍬ means to include all packages.
 
  :If 2>|≡args
