@@ -7,10 +7,10 @@ The code can also be used outside of Cider, but documentation is currently only 
 
 To run these tests in Dyalog version 19.0, you must:
 
-* Make sure you have installed .NET 6.0 or later and set DYALOG_NOTNET=1.
+* Make sure you have installed .NET 6.0 or later and set DYALOG_DOTNET=1.
 * Install NuGet using one of the following mechanisms:
   * ]Tatin.LoadPackage NuGet (once this package has been created, which should be within the next couple of days if all goes well)
-  * Use ]get https://github.com/dyalog/nuget, which will establish NuGet.APLSource and NuGet.Tests
+  * ]get https://github.com/dyalog/nuget, which will establish NuGet.APLSource and NuGet.Tests
 
 To get a list of runnable tests:
 
