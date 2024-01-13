@@ -1,0 +1,270 @@
+﻿:Namespace NuGet
+(⎕IO ⎕ML ⎕WX)←1 1 3
+
+∇ r←Add args;newpkgs;AP;add;name;version;prefix;pkgs;p;newv;new;old;oldv;project_dir;v;bad;i;same;z
+      ⍝ ⊃args: project_dir
+      ⍝ 1↓args: new packages, either 'name' or 'name/version'
+      ⍝ e.g. Add 'c:\tmp\clocktest\ 'Clock'
+     
+ args←,⊆args
+ project_dir←⊃args
+ ('directory not found: ',project_dir)⎕SIGNAL(⎕NEXISTS project_dir)↓11
+     
+ newpkgs←1↓args
+ new←(¯1+p←newpkgs⍳¨'/')↑¨newpkgs
+ newv←p↓¨newpkgs
+     
+ (old oldv)←↓⍉↑pkgs←Packages project_dir
+     
+ i←⍸(new∊old)∧0=≢¨newv    ⍝ Actually already registered and version not specified
+ newv[i]←oldv[old⍳new[i]] ⍝ Update to existing version
+     
+ same←⍸new∊old            ⍝ Already registered
+ same←(⍳≢new)∊(newv[same]≡oldv[old⍳new[same]])/i ⍝ With the same version
+      ⍝ research suggests the following is wrong, just "dotnet add" again to change version
+      ⍝:If 0≠≢i←i/⍨newv[i]≢oldv[old⍳new[i]]
+      ⍝    ('already registered with a different version: ',,⍕pkgs[old⍳new[i]])⎕SIGNAL 11
+      ⍝:EndIf
+     
+ bad←0⍨¨new
+ :For i :In ⍸~same
+     add←(i⊃new),(0≠≢v)/' --version ',v←i⊃newv
+     z←⍪r←⎕CMD'dotnet add ',project_dir,' package ',add
+     bad[i]←∨/'error:'⍷∊r
+ :EndFor
+     
+r←(~bad∨same)bad same/¨⊂new
+:If 0≠≢⊃r ⍝ Publish if something was added
+    z←Publish project_dir ⍝ Returns contents of published folder
+:EndIf
+r←2↓∊(0≠≢¨r)/', Added/Updated: ' ', Error: ' ', Already registered: ',¨⍕¨r
+∇
+
+∇ r←BinFolder project_dir;xml;target
+ xml←⊃CSProjXML project_dir
+ target←⊃xml[xml[;2]⍳⊂'TargetFramework';3]
+ r←({⊃(⎕NEXISTS ⍵)/⍵}(project_dir,'/bin')∘,¨'/Debug' '/Release'),'/',target
+∇
+
+∇ (xml filename)←CSProjXML project_dir;xml;a;pfolder
+ filename←findfile project_dir,'/*.csproj'
+ (project_dir,' does not contain exactly one .csproj file')⎕SIGNAL(0=≢filename)/11
+ xml←⎕XML⊃⎕NGET filename
+∇
+
+∇ r←CmdPaths p
+      ⍝ Fix up an argument to ⎕SH for the target platform
+     
+ :If IsWin
+     r←('/'⎕R'\\')p
+ :Else
+     r←('\\'⎕R'/')p
+ :EndIf
+∇
+
+∇{r}←CopyNativeFiles project_dir;target;native;n
+     
+:If ⎕NEXISTS native←NativeFolder project_dir
+    :If 0≠≢findfile(target←project_dir),'/*.deps.json'
+    :OrIf 0≠≢findfile(target←project_dir,'/published'),'/*.deps.json'
+       n←target ⎕NCOPY⍠('IfExists' 'Skip')('Wildcard' 1)⊢native,'/*'
+    :Else
+       'Unable to locate target directory'⎕SIGNAL 11
+    :EndIf
+    r←(⍕n),' new native files copied from ',native
+:Else
+    r←'no native files to copy'
+:EndIf
+∇
+
+∇ (TFM RID)←GetDotNetIDS dummy;⎕USING;major;minor;fd;dnv;arch;os;ok;netstatus
+      ⍝ Return DotNet
+      ⍝ TFM: Target Framework Moniker (net4N for Framework, netcoreapp3.N, or netN.0 for 6-8) : https://learn.microsoft.com/en-us/dotnet/standard/frameworks
+      ⍝ RID: Runtime Identifier       (win|mac|linux-x64|x86|arm64)                           : https://learn.microsoft.com/en-us/dotnet/core/rid-catalog
+     
+ :If ~ok←2⊃netstatus←2250⌶⍬
+    ('No .NET available. 2250⌶ returned ',⍕netstatus)⎕SIGNAL ok↓11
+ :EndIf
+ ⎕USING←''
+     
+ (major minor)←System.Environment.Version.(Major Minor)
+ dnv←(⍕major),'.',⍕minor
+ 'Minimum .NET version is 3.0'⎕SIGNAL(3>major)/11
+ :Select major
+ :Case 3 ⍝ "core"
+     TFM←'netcoreapp',dnv
+     
+ :Case 4 ⍝ Framework: see if we can get more detailed information
+     :If 0≠≢fd←{0::⍵ ⋄ System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription}''
+         arch←System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture
+         dnv←∊2↑'.'(≠⊆⊢)⊃⌽' '(≠⊆⊢)fd
+     :EndIf
+     TFM←'net',dnv∩⎕D
+ :Else ⍝ 5+
+     TFM←'net',dnv
+ :EndSelect
+     
+ :If major≠4 ⍝ Framework has this in corelib
+     ⎕USING←',System.Runtime',(major<7)/'.InteropServices.RuntimeInformation'
+ :EndIf
+ arch←System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture
+     
+ os←{(¯1+⍵⍳'-')↑⍵}⊃'.'⎕WG'APLVersion'
+ os←⊃('win' 'mac' 'linux' '')['Windows' 'Mac' 'Linux'⍳⊂os]
+ 'unidentified OS'⎕SIGNAL(0=≢os)/11
+     
+ RID←⎕C os,'-',⍕arch
+∇
+
+∇r←GetNamespaces name;⎕USING;mine;assemblies
+     ⍝ Return Namespaces which begine with name
+     ⍝   Note that the namespaces must have been references to be loaded
+     ⍝   (just setting ⎕USING is not enough)
+     
+⎕USING←'System' 'System.Reflection'
+assemblies←AppDomain.CurrentDomain.GetAssemblies
+mine←name{(((≢⍺)↑¨⍕¨⍵)∊⊂⍺)/⍵}assemblies
+:If 0≠≢mine
+    r←mine.GetExportedTypes.ToString
+:Else
+    r←0⍴⊂''
+:EndIf
+∇
+
+∇ r←IsWin
+ r←'Windows'(⊃⍷)⊃# ⎕WG'APLVersion'
+∇
+
+∇ r←NativeFolder project_dir;xml;target;RID;TFM
+ (TFM RID)←GetDotNetIDS ⍬
+ r←project_dir,'/runtimes/',RID,'/native'
+∇
+
+∇ pkgs←Packages project_dir;xml;filename;refs
+      ⍝ Retrieve Package References from the project folder
+ xml←⊃CSProjXML project_dir
+     
+ :If 0=≢refs←xml[⍸xml[;2]∊⊂'PackageReference';4]
+     pkgs←⍬
+ :Else
+     pkgs←{0=≢⍵:'' '' ⋄ ⍵[⍵[;1]⍳'Include' 'Version';2]}¨refs
+ :EndIf
+∇
+
+∇ {r}←Publish project_dir;z
+ z←⎕CMD CmdPaths'dotnet publish ',project_dir,' -o ',project_dir,'/published'
+ r←CopyNativeFiles project_dir
+∇
+
+∇ r←Setup project_dir;csproj;xml;project_name;TFM;RID;pkgs;z
+ :If 0=⎕NC'force' ⋄ force←0 ⋄ :EndIf
+ project_name←{(1-⌊/(⌽⍵)⍳'\/')↑⍵}project_dir
+     
+ :If 'net4'≡4↑(TFM RID)←GetDotNetIDS ⍬
+     ('dotnet ',TFM,' currently not supported')⎕SIGNAL 11
+ :EndIf
+      ⍝ Ask dotnet to create a .csproj file
+     
+ :If ⎕NEXISTS csproj←project_dir,'/',project_name,'.csproj'
+    r←'Project file "',csproj,'" already exists '
+    :If 0=≢pkgs←Packages project_dir
+        r,←' (no packages)'
+    :Else
+        r,←'with package(s): ',(¯1↓2↓∊', '∘,¨⍕¨pkgs)
+    :EndIf
+    →0
+ :EndIf
+     
+ z←↑⎕CMD CmdPaths'dotnet new classlib --target-framework-override ',TFM,' -o ',project_dir
+ (xml csproj)←CSProjXML project_dir
+ :If ~(⊂'LangVersion')∊xml[;2] ⍝ Add latest LangVersion
+     xml⍪←2 'LangVersion' 'Latest'⍬ 5
+     (⊂⎕XML xml)⎕NPUT csproj 1
+ :EndIf
+     
+ r←'Created project file "',csproj,'"'
+∇
+
+∇ using_paths←Using args;deps;d;k;v;t;pkg_name;pkgrt;dll;pkgs;ns;jsname;tgts;z;dlls;children;p;folder;name;project_dir;opts;opts_mat;include_primary;exclude_pkgs;include_pkgs;all_pkgs
+   ⍝ Return list of DLL paths for ⎕USING based on a primary DLL and the direct dependencies for a dotnet project published via NuGet
+   ⍝ args is expected to have one of three forms:
+   ⍝ 1. a string signifying the project directory; or
+   ⍝ 2. a list with the project directory as first element and a key-value pairs as other elements; or
+   ⍝ 3. a list of key-value pairs
+   ⍝
+   ⍝ The key-value part of args is interpreted as a map from options to values. Currently the following options are supported:
+   ⍝ * project_dir is the project directory; it must be signified if args is a pure list of key-value pairs
+   ⍝ * include_primary is a boolean signifying whether (1) or not (0) the path to the primary DLL is included in the output.
+   ⍝   Its standard value is 1.
+   ⍝ * exclude_pkgs is a list of package names (without version number!) to be excluded in the output
+   ⍝   Its standard value is ⍬
+   ⍝ * include_pkgs is a list of package names (without version number!) to be included in the output
+   ⍝   Its standard value is ⍬
+   ⍝ The parameter exclude_pkgs takes precedence over include_pkgs and giving include_pkgs a value of ⍬ means to include all packages.
+
+ :If 2>|≡args
+     project_dir opts←args ⍬
+ :ElseIf 2>|≡⊃args
+     project_dir←⊃args
+     opts←1↓args
+ :Else
+     project_dir←⊃opts_mat⌷⍨2,(1⌷opts_mat←⍉↑args)⍳⊂'project_dir'
+     opts←args
+ :EndIf
+
+ include_primary include_pkgs exclude_pkgs←1(⊂⍬)(⊂⍬){⊃(opts_mat,⍺)⌷⍨2,(1⌷opts_mat←⍉↑args)⍳⊂⍵}¨'include_primary' 'include_pkgs' 'exclude_pkgs'
+
+ jsname←7162⌶ ⍝ JSON Translate Name
+
+ pkgs←(~exclude_pkgs∊⍥⎕C⍨1⊃¨all_pkgs)/all_pkgs←Packages project_dir
+ :If 0<≢include_pkgs
+     pkgs←(include_pkgs∊⍥⎕C⍨1⊃¨pkgs)/pkgs
+ :EndIf
+
+
+ :If 0≠≢deps←findfile project_dir,'/*.deps.json'
+ :OrIf 0≠≢deps←findfile project_dir,'/published/*.deps.json'
+
+     ⍝ ↓↓↓ This code is a namespace-based version of what follows, in case that turns out to be useful someday
+     ⍝ ns←⎕JSON ⊃⎕NGET deps
+     ⍝ z←ns.targets⍎0 jsname ns.runtimeTarget.name
+     ⍝ children←z.⎕NL-9 ⍝ refs to all children
+     ⍝ children←(({(¯1+⍵⍳¨'/')↑¨⍵}1 jsname¨children)∊⊃¨pkgs)/children
+     ⍝ dlls←1 jsname¨⊃,/(,z⍎⍕children).runtime.⎕NL -9
+     ⍝ dlls←(∊¨1↓¨⎕NPARTS¨dlls)~⊂'nuget-packages.dll'
+     ⍝ ↑↑↑
+
+     (d k v t)←↓⍉⎕JSON ⎕OPT'Format' 'M'⊃⎕NGET deps
+     ⍝ Depth, Key, Value, Type
+     {}2{p[⍵]←⍺[⍺⍸⍵]}⌿⊢∘⊂⌸d⊣p←⍳≢d   ⍝ Parent vector p
+     ⍝ Descendant of pkgs and key≡"runtime"
+     pkg_name←⎕C⊃¨'/'(≠⊆⊢)¨k   ⍝ e.g. Clock/1.0.3 → Clock
+     pkgrt←(k∊⊂'runtime')(∧⍤1){⍵∨⍵[p]}⍤1⍣≡pkg_name(∊⍤1 0)⊃¨⎕C pkgs
+     ⍝ Child of "runtime" key is path to .dll
+     ⍝    file name    key  parent is "runtime"
+              ⍝ dll←⊃∘⌽¨'/'(≠⊆⊢)¨k⌿⍤1⍨(⊂p)⌷⍤1⊢pkgrt
+     dll←∊¨1↓¨⎕NPARTS(∨⌿pkgrt[;p])/k
+     using_paths←(project_dir,'/published/')∘,¨dll
+
+     (folder name)←2↑⎕NPARTS ¯10↓deps
+
+     ⍝ Possibly include primary DLL
+     :If include_primary
+     :AndIf ⎕NEXISTS dll←(∊folder name),'.dll'
+         using_paths,←⊂dll
+     :EndIf
+
+ :Else ⍝ No deps.json file
+     ∘∘∘ ⍝ Framework? Now what?!
+     using_paths←{(~(2⊃¨⎕NPARTS ⍵)∊⊂project_name)/⍵}(⊃⎕NINFO⍠1⊢project_dir,'/published/*.dll')
+ :EndIf
+ using_paths←',',¨using_paths
+∇
+
+∇version←Version
+version←'0.1.0'
+∇
+
+findfile←{{(1=≢⍵)/⊃⍵}⊃0 ⎕NINFO⍠1⊢⍵}
+
+:EndNamespace 
