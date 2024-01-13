@@ -1,5 +1,0 @@
- r←test_kafka project_dir;using;prefixes;path;drvs;drv;p
- ⎕SE.Link.Create 'DKaf' 'c:\devt\DKaf'
-
- p←⎕NEW DKaf.Producer (⊂'localhost:9092')
- p.Produce('dyalog' 'mykey' 'This should be a utf8 string')

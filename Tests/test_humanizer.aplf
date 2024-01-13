@@ -1,5 +1,0 @@
-test_humanizer project_dir;⎕USING
-⎕SE.NuGet.Add project_dir 'Humanizer.Core'
-⎕USING←⎕SE.NuGet.Using project_dir
-∘∘∘
-(1+⎕DT 'J')
