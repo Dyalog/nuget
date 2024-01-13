@@ -1,4 +1,4 @@
- using_paths←Using args;deps;d;k;v;t;pkg_name;pkgrt;dll;pkgs;ns;jsname;tgts;z;dlls;children;p;folder;name;project_dir;opts;opts_mat;include_primary;exclude_pkgs;include_pkgs;all_pkgs
+ using_paths←Using args;deps;d;k;v;t;pkg_name;pkgrt;dll;pkgs;ns;jsname;tgts;z;dlls;children;p;folder;name;project_dir;opts;opts_mat;include_primary;exclude_pkgs;include_pkgs;all_pkgs;keys;vals
    ⍝ Return list of DLL paths for ⎕USING based on a primary DLL and the direct dependencies for a dotnet project published via NuGet
    ⍝ args is expected to have one of three forms:
    ⍝ 1. a string signifying the project directory; or
@@ -15,17 +15,17 @@
    ⍝   Its standard value is ⍬
    ⍝ The parameter exclude_pkgs takes precedence over include_pkgs and giving include_pkgs a value of ⍬ means to include all packages.
 
- :If 2>|≡args
-     project_dir opts←args ⍬
- :ElseIf 2>|≡⊃args
-     project_dir←⊃args
-     opts←1↓args
+ args←,⊆args
+ :If 1=≡project_dir←⊃args ⍝ First is not a simple vector
+     opts_mat←⍉↑1↓args
  :Else
-     project_dir←⊃opts_mat⌷⍨2,(1⌷opts_mat←⍉↑args)⍳⊂'project_dir'
-     opts←args
+     opts_mat←⍉↑args
+     project_dir←(opts_mat[1;]⍳⊂'project_dir')⊃opts_mat[2;],⊂''
  :EndIf
 
- include_primary include_pkgs exclude_pkgs←1(⊂⍬)(⊂⍬){⊃(opts_mat,⍺)⌷⍨2,(1⌷opts_mat←⍉↑args)⍳⊂⍵}¨'include_primary' 'include_pkgs' 'exclude_pkgs'
+ 'project directory must be specified' ⎕SIGNAL (0=≢project_dir)⍴11
+ (keys vals)←2↑↓opts_mat
+ (include_primary include_pkgs exclude_pkgs)←1(⊂⍬)(⊂⍬){(keys⍳⊂⍵)⊃vals,⍺}¨'include_primary' 'include_pkgs' 'exclude_pkgs'
 
  jsname←7162⌶ ⍝ JSON Translate Name
 
@@ -37,15 +37,6 @@
 
  :If 0≠≢deps←findfile project_dir,'/*.deps.json'
  :OrIf 0≠≢deps←findfile project_dir,'/published/*.deps.json'
-
-     ⍝ ↓↓↓ This code is a namespace-based version of what follows, in case that turns out to be useful someday
-     ⍝ ns←⎕JSON ⊃⎕NGET deps
-     ⍝ z←ns.targets⍎0 jsname ns.runtimeTarget.name
-     ⍝ children←z.⎕NL-9 ⍝ refs to all children
-     ⍝ children←(({(¯1+⍵⍳¨'/')↑¨⍵}1 jsname¨children)∊⊃¨pkgs)/children
-     ⍝ dlls←1 jsname¨⊃,/(,z⍎⍕children).runtime.⎕NL -9
-     ⍝ dlls←(∊¨1↓¨⎕NPARTS¨dlls)~⊂'nuget-packages.dll'
-     ⍝ ↑↑↑
 
      (d k v t)←↓⍉⎕JSON ⎕OPT'Format' 'M'⊃⎕NGET deps
      ⍝ Depth, Key, Value, Type
@@ -68,7 +59,8 @@
      :EndIf
 
  :Else ⍝ No deps.json file
-     ∘∘∘ ⍝ Framework? Now what?!
+     'NuGet support currently requires .NET 6.0 or later' ⎕SIGNAL (2=⊃2250⌶0)/11
+     'Unable to locate deps.json file' ⎕SIGNAL 11 ⍝ /// Different strategy required for Framework
      using_paths←{(~(2⊃¨⎕NPARTS ⍵)∊⊂project_name)/⍵}(⊃⎕NINFO⍠1⊢project_dir,'/published/*.dll')
  :EndIf
  using_paths←',',¨using_paths
