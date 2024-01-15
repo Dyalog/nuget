@@ -7,7 +7,7 @@ This code is used by [Cider]:(https://github.com/aplteam/Cider) to support NuGet
 The code can also be used outside of Cider, but documentation is currently rudimentary, consisting only in the form of this README file and the example code in the `Tests/` folder.
 
 ## Introduction
-The NuGet tool works by tapping into the "dotnet" command line tool to establish a folder as a .NET project, and use tools built in to .NET to load NuGet packages. It requires .NET 6.0, and Dyalog APL must be configured to use the new .NET by setting DYALOG_DOTNET=1.
+The NuGet tool works by tapping into the "dotnet" command line tool to establish a folder as a .NET project, and use tools built in to .NET to load NuGet packages. It requires .NET 6.0, and Dyalog APL must be configured to use the new .NET by setting DYALOG_NETCORE=1.
 
 ## Using NuGet with Cider
 
@@ -15,7 +15,7 @@ Please refer to the Cider documentation for instructions. At the time this was w
 
 ## Brief API documentation
 
-##### `NuGet.Setup projectdir`
+### `NuGet.Setup projectdir`
 
 Makes the initial call to the dotnet command to create a .NET project in the named directory. This must be called first. Example:
 
@@ -24,7 +24,7 @@ Makes the initial call to the dotnet command to create a .NET project in the nam
 Created project file "/tmp/nuget-test/nuget-test.csproj"
 ```
 
-##### `NuGet.Add projectdir packageid`
+### `NuGet.Add projectdir packageid`
 
 Adds a NuGet package as a dependency of the project found in the named directory. The package name can optionally be followed by a version number; if no version is provided the latest will be used. Example:
 
@@ -33,7 +33,7 @@ Adds a NuGet package as a dependency of the project found in the named directory
 Added/Updated:  Clock 
 ```
 
-##### `⎕USING←NuGet.Using projectdir`
+### `⎕USING←NuGet.Using projectdir`
 
 Returns the ⎕USING setting that will make it possible to reference the entry points of the added packages. Example:
 
@@ -55,7 +55,7 @@ If you do not want to include the DLL which represents the empty C# executable t
 └────────────────────────────────────┘
 ```
 
-##### `NuGet.Packages projectdir`
+### `NuGet.Packages projectdir`
 
 Returns the current list of dependencies::
 
@@ -68,7 +68,7 @@ Returns the current list of dependencies::
 └─────────────┘
 ```
 
-##### `NuGet.Version`
+### `NuGet.Version`
 
 Returns the current NuGet version number:
 
