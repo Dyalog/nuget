@@ -2,7 +2,8 @@
  :If 0=⎕NC 'force' ⋄ force←0 ⋄ :EndIf
  project_name←{(1-⌊/(⌽⍵)⍳'\/')↑⍵}project_dir
 
- :If 'net4'≡4↑(TFM RID)←GetDotNetIDS ⍬
+ (TFM RID)←GetDotNetIDS ⍬
+ :If 'net4'≡4↑TFM
      ('dotnet ',TFM,' currently not supported')⎕SIGNAL 11
  :EndIf
  ⍝ Ask dotnet to create a .csproj file
