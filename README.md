@@ -2,7 +2,7 @@
 
 A tool to help use NuGet packages from Dyalog APL.
 
-This code is used by [Cider]:(https://github.com/aplteam/Cider) to support NuGet packages as project dependencies. It requires Dyalog v19.0 and .NET 6.0 or later.
+This code is used by [Cider](https://github.com/aplteam/Cider) to support NuGet packages as project dependencies. It requires Dyalog v19.0 and .NET 6.0 or later.
 
 The code can also be used outside of Cider, but documentation is currently rudimentary, consisting only in the form of this README file and the example code in the `Tests/` folder.
 
