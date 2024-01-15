@@ -1,4 +1,4 @@
- using_paths←Using args;deps;d;k;v;t;pkg_name;pkgrt;dll;pkgs;ns;jsname;tgts;z;dlls;children;p;folder;name;project_dir;opts;opts_mat;include_primary;exclude_pkgs;include_pkgs;all_pkgs;keys;vals
+ using_paths←{opts} Using project_dir;deps;d;k;v;t;pkg_name;pkgrt;dll;pkgs;ns;jsname;tgts;z;dlls;children;p;folder;name;opts;opts_mat;all_pkgs;keys;vals;def_opts;includePrimary;includePkgs;excludePkgs
    ⍝ Return list of DLL paths for ⎕USING based on a primary DLL and the direct dependencies for a dotnet project published via NuGet
    ⍝ args is expected to have one of three forms:
    ⍝ 1. a string signifying the project directory; or
@@ -15,23 +15,22 @@
    ⍝   Its standard value is ⍬
    ⍝ The parameter exclude_pkgs takes precedence over include_pkgs and giving include_pkgs a value of ⍬ means to include all packages.
 
- args←,⊆args
- :If 1=≡project_dir←⊃args ⍝ First is not a simple vector
-     opts_mat←⍉↑1↓args
- :Else
-     opts_mat←⍉↑args
-     project_dir←(opts_mat[1;]⍳⊂'project_dir')⊃opts_mat[2;],⊂''
- :EndIf
-
- 'project directory must be specified' ⎕SIGNAL (0=≢project_dir)⍴11
- (keys vals)←2↑↓opts_mat
- (include_primary include_pkgs exclude_pkgs)←1(⊂⍬)(⊂⍬){(keys⍳⊂⍵)⊃vals,⍺}¨'include_primary' 'include_pkgs' 'exclude_pkgs'
+ def_opts←⎕NS ''
+ def_opts.(includePrimary includePkgs excludePkgs)←1 ⍬ ⍬
+ :Select ⊃⎕NC 'opts'
+     :Case 0
+         opts←⎕NS ''
+     :Case 2
+         opts←⎕SE.Dyalog.Array.Deserialise opts
+ :EndSelect
+ 'def_opts' ⎕NS opts
+ (includePrimary includePkgs excludePkgs)←def_opts.(includePrimary includePkgs excludePkgs)
 
  jsname←7162⌶ ⍝ JSON Translate Name
 
- pkgs←(~exclude_pkgs∊⍥⎕C⍨1⊃¨all_pkgs)/all_pkgs←Packages project_dir
- :If 0<≢include_pkgs
-     pkgs←(include_pkgs∊⍥⎕C⍨1⊃¨pkgs)/pkgs
+ pkgs←(~excludePkgs∊⍥⎕C⍨1⊃¨all_pkgs)/all_pkgs←Packages project_dir
+ :If 0<≢includePkgs
+     pkgs←(includePkgs∊⍥⎕C⍨1⊃¨pkgs)/pkgs
  :EndIf
 
 
@@ -53,7 +52,7 @@
      (folder name)←2↑⎕NPARTS ¯10↓deps
 
      ⍝ Possibly include primary DLL
-     :If include_primary
+     :If includePrimary
      :AndIf ⎕NEXISTS dll←(∊folder name),'.dll'
          using_paths,←⊂dll
      :EndIf
