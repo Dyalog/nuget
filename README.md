@@ -91,7 +91,7 @@ To get a list of runnable tests:
 ```
       NuGet.Tests.test ''
 The current test functions exist:
- test_clock  test_mailkit  test_parquet  test_selenium 
+ test_clock  test_humanizer  test_mailkit  test_parquet  test_selenium 
 ```
 
 To run a test:
@@ -102,3 +102,5 @@ Created project file "/tmp/nuget-test/nuget-test.csproj"
 Added/Updated:  Selenium.WebDriver  Selenium.WebDriver.ChromeDriver 
 Successfully loaded Dyalog - Home
 ```
+
+Note that you cannot run more than one test per APL session, because once the DLL's are loaded by the interpreter, there is currently no way to unload them.

@@ -1,7 +1,0 @@
- test_humanizer_wip project_dir;⎕USING
- ⎕←'This example doesn''t work yet, please try again later'
- →0
-
- NuGet.Add project_dir'Humanizer.Core'
- ⎕USING←NuGet.Using project_dir
- ∘∘∘ ⍝ Now what?
