@@ -1,5 +1,0 @@
- r←test_kafka;using;prefixes;path;drvs;drv;p
- ⎕USING←#.NuGet.Add'Confluent.Kafka'
-
- p←⎕NEW Producer'localhost:9092'
- p.Produce('dyalog' 'mykey' 'This should be a utf8 string')

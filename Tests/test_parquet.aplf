@@ -1,6 +1,0 @@
-test_parquet project_dir;path;z;colnames;data
-⎕SE.NuGet.Add project_dir 'Parquet.Net'
-⎕USING←(⎕SE.NuGet.Using project_dir),⊂'System.IO,System.IO.FileSystem,System.IO.Stream'
-path←⊃⎕NPARTS 4⊃5179⌶⊃⎕SI
-(data colnames)←Read path,'userdata1.parquet'
-colnames,[0.5]⍪¨10↑¨data
