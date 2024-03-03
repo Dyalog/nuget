@@ -7,7 +7,7 @@ This code is used by [Cider](https://github.com/aplteam/Cider) to support NuGet 
 The code can also be used outside of Cider, but documentation is currently rudimentary, consisting only in the form of this README file and the example code in the `Tests/` folder.
 
 ## Introduction
-The NuGet tool works by tapping into the "dotnet" command line tool to establish a folder as a .NET project, and use tools built in to .NET to load NuGet packages. It requires .NET 6.0, and Dyalog APL must be configured to use the new .NET by setting DYALOG_NETCORE=1.
+The NuGet tool works by tapping into the "dotnet" command line tool to establish a folder as a .NET project, and use tools built in to .NET to load NuGet packages. It requires .NET 6.0 or later, and Dyalog APL must be configured to use the new .NET by setting DYALOG_NETCORE=1.
 
 ## Using NuGet with Cider
 
@@ -89,15 +89,15 @@ To run the tests in Dyalog version 19.0, you must:
 To get a list of runnable tests:
 
 ```
-      NuGet.Tests.test ''
+      Tests.test ''
 The current test functions exist:
- test_clock  test_humanizer  test_mailkit  test_parquet  test_selenium 
+ test_clock  test_humanizer  test_htmlsanitizer  test_mailkit  test_parquet  test_selenium 
 ```
 
 To run a test:
 
 ```
-      NuGet.Tests.test 'selenium'
+      Tests.test 'selenium'
 Created project file "/tmp/nuget-test/nuget-test.csproj"
 Added/Updated:  Selenium.WebDriver  Selenium.WebDriver.ChromeDriver 
 Successfully loaded Dyalog - Home
