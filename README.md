@@ -16,7 +16,6 @@ Please refer to the Cider documentation for instructions. At the time this was w
 ## Brief API documentation
 
 ### `NuGet.Setup projectdir`
-
 Makes the initial call to the dotnet command to create a .NET project in the named directory. This must be called first. Example:
 
 ```
@@ -49,7 +48,7 @@ Was OFF
 If you do not want to include the DLL which represents the empty C# executable that was created by the dotnet command, you can specify this as follows:
 
 ```
-      '{includePrimary: 0}' NuGet.Using project_dir 
+      '(includePrimary: 0)' NuGet.Using project_dir 
 ┌────────────────────────────────────┐
 │,/tmp/nuget-test/published/Clock.dll│
 └────────────────────────────────────┘
