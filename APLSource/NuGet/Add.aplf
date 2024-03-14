@@ -16,8 +16,6 @@
 
  (old oldv)←↓⍉↑pkgs←Packages project_dir
 
- 'directory cannot have same name as package'⎕SIGNAL(new∊⍥⎕C⍨⊢/'/'(≠⊆⊢)⊃1 ⎕NPARTS project_dir)/11
-
  i←⍸(new∊old)∧0=≢¨newv    ⍝ Actually already registered and version not specified
  newv[i]←oldv[old⍳new[i]] ⍝ Update to existing version
 
