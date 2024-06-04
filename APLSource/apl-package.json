@@ -4,7 +4,7 @@
   description: "Use NuGet packages from Dyalog APL",
   documentation: "./README.md",
   files: "",
-  group: "MK",
+  group: "dyalog",
   io: 1,
   license: "MIT",
   lx: "",
@@ -19,5 +19,5 @@
   source: "NuGet",
   tags: "dotnet,nuget,packages",
   userCommandScript: "",
-  version: "0.2.0+2",
+  version: "0.2.1",
 }
