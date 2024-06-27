@@ -1,7 +1,7 @@
- r←Add args;project_dir;newpkgs;new;p;newv;old;oldv;pkgs;i;same;bad;add;z;mask;v
- ⍝ ⊃args: project_dir
- ⍝ 1↓args: new packages, either 'name' or 'name/version'
- ⍝ e.g. Add 'c:\tmp\clocktest\ 'Clock'
+r←Add args;add;bad;buff;cmd;i;mask;new;newpkgs;newv;old;oldv;p;pkgs;project_dir;qdmx;same;tempFilename;v;z;⎕RL
+⍝ ⊃args: project_dir
+⍝ 1↓args: new packages, either 'name' or 'name/version'
+⍝ e.g. Add 'c:\tmp\clocktest\ 'Clock'
 
  args←,⊆args
  project_dir←⊃args
@@ -15,32 +15,62 @@
 
  (old oldv)←↓⍉↑pkgs←Packages project_dir
 
- i←⍸(new∊old)∧0=≢¨newv    ⍝ Actually already registered and version not specified
- newv[i]←oldv[old⍳new[i]] ⍝ Update to existing version
+ i←⍸(new∊old)∧0=≢¨newv                              ⍝ Actually already registered and version not specified
+ newv[i]←oldv[old⍳new[i]]                           ⍝ Update to existing version
 
- same←⍸new∊old            ⍝ Already registered
- same←(⍳≢new)∊(newv[same]≡oldv[old⍳new[same]])/i ⍝ With the same version
- ⍝ research suggests the following is wrong, just "dotnet add" again to change version
- ⍝:If 0≠≢i←i/⍨newv[i]≢oldv[old⍳new[i]]
- ⍝    ('already registered with a different version: ',,⍕pkgs[old⍳new[i]])⎕SIGNAL 11
- ⍝:EndIf
+ same←⍸new∊old                                      ⍝ Already registered
+ same←(⍳≢new)∊(newv[same]≡oldv[old⍳new[same]])/i    ⍝ With the same version
+
+⍝ research suggests the following is wrong, just "dotnet add" again to change version
+⍝:If 0≠≢i←i/⍨newv[i]≢oldv[old⍳new[i]]
+⍝ ('already registered with a different version: ',,⍕pkgs[old⍳new[i]])⎕SIGNAL 11
+⍝:EndIf
 
  bad←0⍨¨new
  r←''
  r,←'Already registered: '∘,¨same/new
  :For i :In ⍸~same
      add←(i⊃new),(0≠≢v)/' --version ',v←i⊃newv
-     z←⎕CMD'dotnet add ',project_dir,' package ',add
-     mask←∨/¨'error: '∘⍷¨z
-     :If bad[i]←∨/mask
-         r,←⊂'Error: ',add
-         r,←mask/z
+     cmd←'dotnet add ',project_dir,' package ',add
+     :If 'Win'≡3↑⊃# ⎕WG'APLVersion'
+         z←⎕CMD cmd
+         mask←∨/¨'error: '∘⍷¨z
+         :If bad[i]←∨/mask
+             r,←⊂'Error: ',add
+             r,←mask/z
+         :Else
+             r,←⊂'Added/Updated: ',add
+         :EndIf
      :Else
-         r,←⊂'Added/Updated: ',add
+         ⎕RL←⍬
+         tempFilename←(739⌶0),'/',⎕AN,'-',⍕100000+?10000000
+         :Trap 11
+             z←⎕CMD cmd,'>',tempFilename,' 2>&1'
+             mask←∨/¨'error: '∘⍷¨z
+             :If bad[i]←∨/mask
+                 r,←⊂'Error: ',add
+                 r,←mask/z
+             :Else
+                 r,←⊂'Added/Updated: ',add
+             :EndIf
+         :Else
+             qdmx←⎕DMX
+             :If ⎕NEXISTS tempFilename
+                 z←⊃⎕NGET tempFilename 1
+                 mask←∨/¨'error: '∘⍷¨buff
+             :AndIf bad[i]←∨/mask
+                 r,←⊂'Error: ',add
+                 r,←mask/buff
+                 3 ⎕NDELETE tempFilename
+             :Else
+                 qdmx.EM ⎕SIGNAL qdmx.EN
+             :EndIf
+         :EndTrap
+         3 ⎕NDELETE tempFilename
      :EndIf
  :EndFor
 
- :If bad∧.⍱same ⍝ Publish if something was added
-     z←Publish project_dir ⍝ Returns contents of published folder
+ :If bad∧.⍱same                                     ⍝ Publish if something was added
+     z←Publish project_dir                          ⍝ Returns contents of published folder
  :EndIf
  r←⍪r
