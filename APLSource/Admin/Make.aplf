@@ -1,0 +1,8 @@
+zipFilename←Make;cfg;noOf;parms
+cfg←⎕se.Tatin.ReadPackageConfigFile ##.CiderConfig.HOME
+noOf←⎕se.Tatin.CreateAPIfromCFG ##.NuGet cfg
+{⍵:.} 5≠noOf ⍝ Expected number of public API functions
+parms←⎕se.Tatin.CreateBuildParms ##.CiderConfig.HOME
+parms.version←##.NuGet.Version
+parms.targetPath←##.CiderConfig.HOME,'/',##.CiderConfig.CIDER.distributionFolder
+zipFilename←⎕se.Tatin.BuildPackage parms
