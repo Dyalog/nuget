@@ -1,5 +1,5 @@
 r←GetNamespaces name;⎕using;mine;assemblies
-⍝ Return Namespaces which begine with name
+⍝ Return Namespaces which begin with name
 ⍝   Note that the namespaces must have been references to be loaded
 ⍝   (just setting ⎕USING is not enough)
 
