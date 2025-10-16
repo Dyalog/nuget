@@ -1,1 +1,1 @@
-BinFolder{##.BinFolder ⍵}
+BinFolder←{##.BinFolder ⍵}
