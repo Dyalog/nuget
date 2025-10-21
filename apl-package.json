@@ -20,5 +20,5 @@
   source: "APLSource/NuGet",
   tags: "dotnet,nuget,packages",
   userCommandScript: "",
-  version: "0.2.5",
+  version: "0.2.6",
 }
