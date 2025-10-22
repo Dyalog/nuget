@@ -1,0 +1,15 @@
+DyalogTest : 1.30
+ID         : nuget
+Description: DTest for NuGet
+
+Setup   : setup_nuget
+
+⍝ test_kafka and test_parquet are not called - they are WIP currently
+⍝ the "test__*" cover fns are created by setup_n uget
+Test    : test__clock
+Test    : test__htmlsanitizer
+Test    : test__humanizer
+Test    : test__mailkit
+Test    : test__selenium
+
+Teardown: teardown_nuget

@@ -1,0 +1,16 @@
+ {r}←setup_nuget nul;bp;path;file;f;d2;z
+ r←''
+ path←({1⊃⎕NPARTS{(-'/\'∊⍨⊢/⍵)↓⍵}⍵}⍣2)##.TESTSOURCE   ⍝ go back to grandpa's folder...
+⍝ build the NuGet package and load it - so that we test against the built package (to find functions not included in the API etc.)
+ bp←⎕SE.Tatin.CreateBuildParms path
+ file←setup_ResetTempDirs ##.TESTSOURCE
+ tmpDir←MkUniqueDir(739⌶0),'/NuGet_'   ⍝ must be global! (see "test")
+ (⊂tmpDir)⎕NPUT file 2  ⍝ tempdirs.txt contains all temp dirs created for tests - they'll be deleted in setup_ResetTempDirs
+ bp.targetPath←tmpDir
+ ⎕←⎕this
+ z←{⎕SE.Tatin.(LoadPackages(BuildPackage ⍵)('#'))}bp
+ ⎕←⎕this
+ 1 Assert z   ⍝ was one package loaded?
+ f←⎕NL ¯3
+ f←{((⊂'test_')≡¨5↑¨⍵)/⍵}f
+ {⎕FX('r←test_',4↓⍵)'r←test 6↓1⊃⎕SI'}¨f

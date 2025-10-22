@@ -1,0 +1,11 @@
+ {r}←MkUniqueDir w
+⍝ emulates ⎕MKDIR⍠'Unique' in versions < 20
+
+ :If 20≤2 1⊃'.'⎕VFI 2⊃'#'⎕WG'APLVersion'
+     r←⎕MKDIR(⍠'Unique' 1)w
+ :Else
+     r←w
+     :While ⎕NEXISTS r
+         r,←(⎕A,⎕D)[?36]
+     :EndWhile
+ :EndIf

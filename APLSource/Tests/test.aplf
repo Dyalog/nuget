@@ -1,13 +1,22 @@
-test name;folder;NuGet
-:If 0=≢name
-    ⎕←'The current test functions exist:'
-    ⎕←{(1=+/¨'_'=⍵)/⍵}'t' ⎕NL -3
-    →0
-:EndIf
+ {r}←test name;folder;NuGet;R;⎕USING
+ ⍝ localizes ⎕USING just in case a test does not...
+ r←''
+ :If 0=≢name
+     ⎕←'The current test functions exist:'
+     ⎕←{(1=+/¨'_'=⍵)/⍵}'t'⎕NL-3
+     →0
+ :EndIf
+ :If 0=⎕NC'tmpDir'  ⍝ is created in setup_nuget, may not available when used in the session...
+     tmpDir←MkUniqueDir(739⌶0),'/NuGet_'
+ :EndIf
 
-'No such test' ⎕SIGNAL (3≠⎕NC 'test_',name)/6
-folder←'/tmp/nuget-test'
-NuGet←find_nuget_api
-3 ⎕NDELETE folder
-NuGet.Setup folder
-⍎'test_',name,' folder'
+ NuGet←find_nuget_api
+ :For name :In ⊆name
+     'No such test'⎕SIGNAL(3≠⎕NC'test_',name)/6
+     folder←MkUniqueDir tmpDir,'/',name  ⍝ unique folder for this test is created in tmpDir (which is deleted by "teardown_nuget")
+     NuGet.Setup folder
+     ⍎'R←test_',name,' folder'
+     :If 0<≢∊R
+         r,←(⊂'   test_',name,': '),¨⊆R
+     :EndIf
+ :EndFor

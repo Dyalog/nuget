@@ -1,7 +1,17 @@
-test_parquet project_dir;path;z;colnames;data
-NuGet.Add project_dir 'Parquet.Net'
-parquet.⎕USING←(NuGet.Using project_dir),⊂'System.IO,System.IO.FileSystem,System.IO.Stream'
+ {r}←test_parquet project_dir;path;z;colnames;data;trap;⎕using
+ r←''  ⍝ no checks here - error will be caught when executed throught DTest or in CITA
+ trap←0  ⍝ do not catch errors by default
+ :If 2=⎕NC'##.halt'   ⍝ unless ##.halt exists  (DTest's flag)
+ :AndIf ##.halt=0     ⍝ and isn't set to 1
+     trap←1
+ :EndIf
+ :Trap trap/0  ⍝ this test is currently not working, so at least catch the error (unless we run with the "-halt" flag in DTest)
+     NuGet.Add project_dir'Parquet.Net'
+     parquet.⎕USING←(NuGet.Using project_dir),⊂'System.IO,System.IO.FileSystem,System.IO.Stream'
 
-path←(⊃⎕NPARTS 4⊃5179⌶⊃⎕SI),'parquet/'
-(data colnames)←parquet.Read path,'userdata1.parquet'
-colnames,[0.5]⍪¨10↑¨data
+     path←(⊃⎕NPARTS 4⊃5179⌶⊃⎕SI),'parquet/'
+     (data colnames)←parquet.Read path,'userdata1.parquet'
+     colnames,[0.5]⍪¨10↑¨data
+ :Else
+     r←⎕DM
+ :EndTrap
