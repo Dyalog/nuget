@@ -12,7 +12,7 @@
  NuGet.Publish project_dir
  prefixes←'OpenQA' 'OpenQA.Selenium' 'OpenQA.Selenium.Chrome' 'OpenQA.Selenium.Support.UI'   ⍝ paths into libraries that we need in ⎕USING
  ⎕USING←prefixes,NuGet.Using project_dir
- path←(NuGet.BinFolder project_dir),'/chromedriver.exe'
+ path←(NuGet.BinFolder project_dir),'/chromedriver',('win'≡⎕c 3↑1⊃#⎕wg'APLVersion')/'.exe'
  drvs←ChromeDriverService.CreateDefaultService⊂path
  drv←⎕NEW ChromeDriver drvs
  drv.Url←'https://dyalog.com'
