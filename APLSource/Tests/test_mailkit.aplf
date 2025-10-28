@@ -1,31 +1,31 @@
-{r}←test_mailkit project_dir;server;user;pass;ct;client;starttls;i;n;msg;⎕using
-r←''
-server←'mail.dyalog.com'
-user←'qa-internal@dyalog.com'
-:if 0=≢pass←2 ⎕NQ'.' 'GetEnvironment' 'POP3_QA_INTERNAL'
-r←'Environment variable POP3_QA_INTERNAL not set - cannot run test_mailkit'
-→0
-:endif
+ {r}←test_mailkit project_dir;server;user;pass;ct;client;starttls;i;n;msg;⎕USING
+ r←''
+ server←'mail.dyalog.com'
+ user←'qa-internal@dyalog.com'
+ :If 0=≢pass←2 ⎕NQ'.' 'GetEnvironment' 'POP3_QA_INTERNAL'
+     r←'Environment variable POP3_QA_INTERNAL not set - cannot run test_mailkit'
+     →0
+ :EndIf
 
-NuGet.Add project_dir 'MimeKit/3.5.0' 'MailKit/3.5.0'
-⎕USING←'System.Threading' 'MailKit.Net.Pop3',NuGet.Using project_dir
-ct←⎕NULL ⍝ Alternatively (⎕NEW CancellationToken 0)
+ NuGet.Add project_dir'MimeKit/3.5.0' 'MailKit/3.5.0'
+ ⎕USING←'System.Threading' 'MailKit.Net.Pop3',NuGet.Using project_dir
+ ct←⎕NULL ⍝ Alternatively (⎕NEW CancellationToken 0)
 
-client←⎕NEW Pop3Client
-starttls←MailKit.Security.SecureSocketOptions.StartTls
-client.Connect server 110 starttls ct
+ client←⎕NEW Pop3Client
+ starttls←MailKit.Security.SecureSocketOptions.StartTls
+ client.Connect server 110 starttls ct
 
-:Trap 90
-    client.Authenticate user pass ct
-:Else
-    r←'Unable to authenticate as ',user,' on server ',server
-    →0
-:EndTrap
+ :Trap 90
+     client.Authenticate user pass ct
+ :Else
+     r←'Unable to authenticate as ',user,' on server ',server
+     →0
+ :EndTrap
 
-⎕←'You have ',(⍕n←client.Count),' message(s)'
+ ⎕←'You have ',(⍕n←client.Count),' message(s)'
 
-:For i :In ⍳n
-     msg←client.GetMessage (i-1) ⎕NULL ⎕NULL ⍝ null CancellationToken and ITransferProgress
+ :For i :In ⍳n
+     msg←client.GetMessage(i-1)⎕NULL ⎕NULL ⍝ null CancellationToken and ITransferProgress
      '[',(⍕i),']'
      'From ',msg.From
      'To   ',msg.To
@@ -33,4 +33,4 @@ client.Connect server 110 starttls ct
      ⎕←' '
      msg.TextBody
      ⎕←' '
-:EndFor
+ :EndFor
