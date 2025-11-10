@@ -26,11 +26,9 @@
         }
     },
  "tests": [
-        {   // inner element can be repeated for multiple tests (or you can omit separating it out in "tests" altogether)
-            "disabled": 0,                                // can be used to temporarily disable a test
-            "id": "nuget",                                // hint: use sensible names!
-            "test": "./APLSource/Tests/nuget.dyalogtest", // adopt as required...
-            "net":"default"
+        {   
+            "id": "nuget",                                
+            "test": "./APLSource/Tests/nuget.dyalogtest", 
         }
     ]
 }
