@@ -1,2 +1,2 @@
  r←IsWin
- r←'Windows'(⊃⍷)⊃# ⎕WG'APLVersion'
+ r←'win'≡APLVersion 1
