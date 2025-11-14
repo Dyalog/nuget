@@ -1,0 +1,3 @@
+r←test__mailkit nul
+⍝ a cover function for DTest to call the actual test function "test_***" through "test" (which setup NuGet for that specific test)
+r←test 6↓1⊃⎕SI

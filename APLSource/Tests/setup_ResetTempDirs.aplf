@@ -1,0 +1,47 @@
+ file←setup_ResetTempDirs folder;d2;f;v
+⍝ The challenge is that  every test creates a temp dir in order to execute NuGet with an empty project folder.
+⍝ But our very own "teardown" will not be able to delete these folder as they may still be locked by still having links
+⍝ to the dlls.  With .NET Framework, there is a way to deal with it ("close appdomain"), but that's not
+⍝ available with .NET Core. So the solution for both cases is to maintain a persistent list of temp dirs
+⍝ and then at the beginning of a test run, we try to delete them. (Likely "leftovers" from previous session.)
+ v←0
+ :If 2=⎕NC'##.verbose'
+ :AndIf ##.verbose
+     v←1
+ :EndIf
+ :If ⎕NEXISTS file←folder,'tempdirs.txt'  ⍝ if the file exists
+     d2←⍬
+     :For f :In 1⊃⎕NGET file 1
+         :If '//'≢2↑f       ⍝ ignore line comments
+             :Select {0::¯2 ⋄ ~⎕NEXISTS ⍵:¯1 ⋄ 2⎕NDELETE ⍵}f
+             :Case ¯2       ⍝ error deleting folder (permissions or locked files etc.)
+                 d2,←⊂f     ⍝ keep it in the list
+                 :If v
+                     ⎕←'Error deleting "',f,'" - will keep in list'
+                     ⎕←(⎕json⍠'Compact'0) ⎕dmx
+                 :EndIf
+             :Case ¯1       ⍝ does not exist (nothing to do)
+                 :If v
+                     ⎕←'"f" does not exist - removed from list'
+                 :EndIf
+             :Case 1        ⍝ successful delete (0 )
+                 :If v
+                     ⎕←'Deleted temp dir:',f
+                 :EndIf
+             :Case 0        ⍝ hmm, is that even possible?
+                 d2,←⊂f     ⍝ keep it in the list anyway to try again later
+             :EndSelect
+         :Else
+             d2,←⊂f     ⍝ keep comments in the list
+         :EndIf
+     :EndFor
+     :If 2<≢d2
+         (⊂d2)⎕NPUT file 1
+     :Else
+         ⎕NDELETE file
+         →createFile
+     :EndIf
+ :Else
+createFile:
+     (⊂'// This file contains all temp dirs created for tests - ideally to be deleted in teardown_nuget' '// but because of locked files this may not possible in the same session - so we maintain a persistent list and check it before a new run...')⎕NPUT file
+ :EndIf

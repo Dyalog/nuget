@@ -1,0 +1,10 @@
+ R←APLVersion sel
+⍝ returns elements of APLVersion specified by sel (see below)
+⍝ passing any other than the supported value simply returns the full APLVersion string
+ R←'.'⎕WG'APLVersion'
+ :Select sel
+ :Case 1   ⍝ sel=1: return leading 3 characters of lowercase platform name
+     R←⎕C 3↑1⊃R
+ :Case 2   ⍝ sel=2: return major version no.
+     R←2 1⊃'.'⎕VFI 2⊃R
+ :EndSelect

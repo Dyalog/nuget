@@ -1,0 +1,5 @@
+{r}←teardown_nuget nul
+r←''
+⍝ 2⎕ndelete tmpDir
+ ⍝start←{⎕SHELL⍠'Shell' ('CMD.EXE' '/C')⊢'start "" ',⊃8374⌶⍵}
+ ⍝     start ((⊃160⌶'DYALOG'),'\dyalog.exe') 'MAXWS=1G'

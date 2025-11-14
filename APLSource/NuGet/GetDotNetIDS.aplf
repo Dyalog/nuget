@@ -30,8 +30,8 @@
  :EndIf
  arch←System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture
 
- os←{(¯1+⍵⍳'-')↑⍵}⊃'.'⎕WG'APLVersion'
- os←⊃('win' 'mac' 'linux' '')['Windows' 'Mac' 'Linux'⍳⊂os]
+ os←APLVersion 1
+ os,←(⊃('win' 'mac' 'linux' '')['win' 'mac' 'lin'⍳⊂os])
  'unidentified OS'⎕SIGNAL(0=≢os)/11
 
  RID←⎕C os,'-',⍕arch

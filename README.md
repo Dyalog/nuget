@@ -23,14 +23,23 @@ Makes the initial call to the dotnet command to create a .NET project in the nam
 Created project file "/tmp/nuget-test/nuget-test.csproj"
 ```
 
-### `NuGet.Add projectdir packageid`
+### `{pub}NuGet.Add projectdir packageid`
 
-Adds a NuGet package as a dependency of the project found in the named directory. The package name can optionally be followed by a version number; if no version is provided the latest will be used. Example:
+Adds a NuGet package as a dependency of the project found in the named directory and (optionally) publishes the package. The package name can optionally be followed by a version number; if no version is provided the latest will be used. Example:
 
 ```
       NuGet.Add '/tmp/nuget-test' 'Clock/1.0.3'
 Added/Updated:  Clock 
 ```
+
+The optional left argument `pub`can be used to control whether the package should be
+published (1, default) or not (0). When adding several packages, you can save time by not publishing during the individual `Add`s, but by using `pub=0` and calling `Publish` afterwards.
+
+### `NuGet.BinFolder projectdir`
+
+Returns the fully qualified path to the binary output directory for a .NET project.
+
+The function prioritizes Debug builds if both Debug and Release folders exist. The target framework (e.g., net6.0, net8.0) is automatically appended to create the complete binary path.
 
 ### `⎕USING←NuGet.Using projectdir`
 
@@ -66,6 +75,10 @@ Returns the current list of dependencies::
 │└─────┴─────┘│
 └─────────────┘
 ```
+
+### `NuGet.Publish projectdir`
+
+Publishes the project and its dependencies to a `/published` folder within the project directory. This step is automatically performed when adding packages (unless disabled with `pub=0` in `Add`), but can be called separately when needed. 
 
 ### `NuGet.Version`
 

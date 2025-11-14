@@ -1,15 +1,42 @@
-r←test_selenium project_dir;using;prefixes;path;drvs;drv
-NuGet.Add project_dir 'Selenium.WebDriver' 'Selenium.WebDriver.ChromeDriver'
-prefixes←'OpenQA' 'OpenQA.Selenium' 'OpenQA.Selenium.Chrome'
-⎕USING←prefixes,NuGet.Using project_dir
-path←(NuGet.BinFolder project_dir),'/chromedriver.exe'
-drvs←ChromeDriverService.CreateDefaultService ⊂path
-drv←⎕NEW ChromeDriver drvs
-drv.Url←'https://dyalog.com'
-⎕DL 5
-:If drv.Title≢'Dyalog - Home'
-   ∘∘∘ ⍝ boo
-:Else
-   ⎕←'Successfully loaded ',drv.Title
-:EndIf
-drv.Quit
+ {r}←test_selenium project_dir;using;prefixes;path;drv;exp;⎕USING;pwf;os
+ r←''  ⍝ no checks here - error will be caught when executed throught DTest or in CITA
+⍝ we test to stepwise add libraries to the project (avoiding the "Publish" step)
+ 0 NuGet.Add project_dir'Selenium.WebDriver'
+ 0 NuGet.Add project_dir'Selenium.WebDriver.ChromeDriver'
+ ⍝ the next one is a bit tricky because we need to a version of the library that matches the version of the WebDriver that was loaded.
+ ⍝ we didn't specify one when loading the WebDriver - so Selenium4 fetched the one that matches our browser!
+ ⍝ Our .csproj will have a line like this:
+ ⍝   <PackageReference Include="Selenium.WebDriver" Version="4.37.0" />
+ ⍝                                                           ↑↑↑↑↑↑    and that is the info we need! regex below will extract it....
+ 0 NuGet.Add project_dir('Selenium.Support/',⊃('"Selenium.WebDriver" Version="(.*)"'⎕S'\1')1⊃⎕NGET{⎕←⍵,'/_',(2⊃⎕NPARTS ⍵),'.csproj'}project_dir)
+ 0 NuGet.Add project_dir'WebDriverManager/2.17.6'
+ NuGet.Publish project_dir
+ prefixes←'OpenQA' 'OpenQA.Selenium' 'OpenQA.Selenium.Chrome' 'OpenQA.Selenium.Support.UI' 'WebDriverManager' 'WebDriverManager.DriverConfigs.Impl' 'WebDriverManager.Helpers'  ⍝ paths into libraries that we need in ⎕USING
+ ⎕USING←'System' 'System.Drawing,System.Drawing.Primitives' 'System.IO,System.IO.dll',prefixes,NuGet.Using project_dir
+ path←(NuGet.BinFolder project_dir),'/chromedriver',('win'≡⎕C 3↑1⊃# ⎕WG'APLVersion')/'.exe'
+
+ :Select ⎕C 3↑1⊃'.'⎕WG'APLVersion'
+ :Case 'win'
+     os←'windows'
+ :Case 'mac'
+     os←'macos'
+ :Case 'lin'
+     os←'linux'
+ :Else
+     ('Unknow OS: ',⎕C 3↑1⊃'.'⎕WG'APLVersion')⎕SIGNAL 11
+ :EndSelect
+ Environment.SetEnvironmentVariable('SE_MANAGER_PATH'({'\'@('/'∘=)⍵}⊃⊃0(⎕NINFO⍠('Recurse' 1)('Wildcard' 1))(project_dir,'/selenium-manager*.*')))
+
+⍝ we're simply creating a new instance - SeleniumManager ensures it's compatible with the locally installed version (requires chrome  to be installed, though)
+ drv←⎕NEW ChromeDriver
+ drv.Url←'https://dyalog.com'
+ ⎕DL 5
+ :If drv.Title≢exp←'Home - Dyalog'
+     r←'did not get expected page title "',exp,'" but "',drv.Title,'"'
+ :Else
+     ⎕←'Successfully loaded ',drv.Title
+ :EndIf
+
+ pwf←⎕NEW PopupWindowFinder drv   ⍝ simple check if the fn from Support.UI is available (will error otherwise)
+
+ drv.Quit

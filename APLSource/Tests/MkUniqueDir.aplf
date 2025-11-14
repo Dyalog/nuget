@@ -1,0 +1,12 @@
+ {r}←MkUniqueDir w
+⍝ emulates ⎕MKDIR⍠'Unique' in versions < 20
+
+ :If 20≤2 1⊃'.'⎕VFI 2⊃'#'⎕WG'APLVersion'
+⍝ :If 20≤APLVersion 2  ⍝ neater, but not possible, as this tool is needed before NuGet is loaded
+     r←⎕MKDIR(⍠'Unique' 1)w
+ :Else
+     r←w
+     :While ⎕NEXISTS r
+         r,←(⎕A,⎕D)[?36]
+     :EndWhile
+ :EndIf

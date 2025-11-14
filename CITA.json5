@@ -1,0 +1,34 @@
+{
+    "defaults": {                                         // all of these entries can also be provided (and tweaked) per test.
+                                                          // btw: casing of names is not important
+        "bits": [32,64],                                  // if you want to bind tests to specific bitness
+        //"context":"C|o|Q",                              // can be left out, might be needed in very special cases...
+        // "env": {
+        //     "foo": "goo"                               // specific environment vars or config settings
+        //  }
+        "dyalogversions": "19-",                          // you may want to change this at the level of individual tests...
+        "editions":["unicode"],                           // ..or editions
+        //*** YOU NEED TO PICK ONE EMAIL ENTRY ONLY! ***
+        //"email": "me@dyalog.com",                       // send test result to...    (can be as simple as this)
+        "email": ["committer"],                           // or a list of addresses
+        //"email": {                                      // and an object with specific fields
+        //           "Error|OK|All|Change": ["me@dyalog.com"],  // for various results ("NB": "change" not yet supported)
+        //       } ,
+        // "net": ["none","default",                      // you may want to associate certain tests with specific versions of .NET
+        //         "3.1","4.8",
+        //         "6.0","7.0","8.0"],
+        "platforms": ["win"],
+        "secondstimeout": 180,                            // 5 minutes - might be too short for some tests, adjust if needed!
+        "usehmon":0,                                      // experimental: use health monitor to collect info while test is running
+        "jenkins_secrets": {                              // one or more Jenkins Secrets that will be available when the test runs
+            id: "f01100d7-6953-426a-990c-167cc9f36368",   // id
+            name: "POP3_QA_INTERNAL",                     // value will be acccessible through this environment variable
+        }
+    },
+ "tests": [
+        {   
+            "id": "nuget",                                
+            "test": "./APLSource/Tests/nuget.dyalogtest", 
+        }
+    ]
+}
